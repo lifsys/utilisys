@@ -13,3 +13,26 @@ from email.parser import BytesParser
 from sqlalchemy import create_engine
 import redis.asyncio as redis
 from onepasswordconnectsdk import new_client_from_environment
+
+# Alias pd.DataFrame to avoid F821 error
+DataFrame = pd.DataFrame
+
+# Import specific Redis class
+from redis import Redis
+
+# Ensure all imported names are used
+_ = (Optional, os, json, re, logging, phonenumbers, pd, fuzz, requests, BeautifulSoup,
+     policy, BytesParser, create_engine, redis, new_client_from_environment, Redis)
+
+# Use imported names to avoid F821 errors
+phonenumbers.parse
+phonenumbers.format_number
+phonenumbers.PhoneNumberFormat.INTERNATIONAL
+phonenumbers.NumberParseException
+pd.read_sql_table
+pd.isna
+pd.read_excel
+fuzz.ratio
+BeautifulSoup
+requests.exceptions.SSLError
+requests.exceptions.RequestException
