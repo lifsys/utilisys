@@ -1,6 +1,6 @@
-# Utilisys
+# Utilisys by Lifsys, Inc
 
-Utilisys is a Python package that provides a collection of utility functions for various tasks including API key retrieval, phone number standardization, dictionary flattening, contract requirement handling, email parsing, file operations, and data processing and conversion.
+Utilisys is a Python package developed by Lifsys, Inc that provides a collection of utility functions for various tasks including API key retrieval, phone number standardization, dictionary flattening, contract requirement handling, email parsing, file operations, and data processing and conversion.
 
 ## Installation
 
@@ -42,3 +42,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+## About Lifsys, Inc
+
+Lifsys, Inc is a company dedicated to developing efficient and user-friendly software solutions. For more information, visit [www.lifsys.com](https://www.lifsys.com).
