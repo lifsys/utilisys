@@ -1,14 +1,28 @@
 """
 Provides utility functions for processing text, files, and data.
+
+This module contains a collection of utility functions for various tasks including:
+- API key retrieval
+- Phone number standardization
+- Dictionary flattening
+- Contract requirement handling
+- Email parsing
+- File operations
+- Data processing and conversion
+
+These utilities are designed to support various operations in the utilisys system.
 """
+# Standard library imports
 from email import policy
 from email.parser import BytesParser
 from typing import Optional
-import phonenumbers
 import logging
 import re
 import os
 import json
+
+# Third-party imports
+import phonenumbers
 import pandas as pd
 import redis.asyncio as redis
 from fuzzywuzzy import fuzz
@@ -16,29 +30,56 @@ import requests
 from bs4 import BeautifulSoup
 import urllib3
 from onepasswordconnectsdk import new_client_from_environment
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 from sqlalchemy import create_engine
 
-def get_api(item, key_name, vault="API"):
+# Disable insecure request warnings
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+def get_api(item: str, key_name: str, vault: str = "API") -> str:
+    """
+    Retrieve an API key from a 1Password vault.
+
+    Args:
+        item (str): The name of the item in the 1Password vault.
+        key_name (str): The name of the key within the item.
+        vault (str, optional): The name of the vault. Defaults to "API".
+
+    Returns:
+        str: The value of the requested key.
+
+    Raises:
+        Exception: If there's an error connecting to 1Password or retrieving the key.
+    """
     try:
         client = new_client_from_environment()
         item = client.get_item(item, vault)
         for field in item.fields:
             if field.label == key_name:
                 return field.value
+        raise ValueError(f"Key '{key_name}' not found in item '{item}'")
     except Exception as e:
-        raise Exception(f"Connect Error: {e}")
+        raise Exception(f"1Password Connect Error: {e}")
 
-def standardize_phone_number(phone, default_country="US"):
+def standardize_phone_number(phone: str, default_country: str = "US") -> str:
     """
-    Standardizes a phone number by parsing it and formatting it in international format.
+    Standardize a phone number by parsing it and formatting it in international format.
+
+    This function attempts to parse the given phone number and format it
+    according to the international standard. If parsing fails, it returns
+    the original input.
 
     Args:
         phone (str): The phone number to be standardized.
-        default_country (str, optional): The default country code to use for parsing. Defaults to "US".
+        default_country (str, optional): The default country code to use for parsing. 
+                                         Defaults to "US".
 
     Returns:
-        str: The standardized phone number in international format, or the original phone number if parsing fails.
+        str: The standardized phone number in international format, 
+             or the original phone number if parsing fails.
+
+    Example:
+        >>> standardize_phone_number("(123) 456-7890")
+        '+1 123-456-7890'
     """
     try:
         # Parse phone number with a default country code
@@ -48,7 +89,8 @@ def standardize_phone_number(phone, default_country="US"):
             phone_number, phonenumbers.PhoneNumberFormat.INTERNATIONAL
         )
     except phonenumbers.NumberParseException:
-        return phone  # Return the original phone number if parsing fails
+        # Return the original phone number if parsing fails
+        return phone
 
 
 def flatten_dict(d, parent_key="", sep="_"):
