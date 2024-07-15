@@ -122,7 +122,7 @@ def load_contract_requirements() -> dict:
         df = pd.read_sql_table("contract_requirements", engine)
         return df
     except (FileNotFoundError, json.JSONDecodeError) as e:
-        raise EmlProcessingError(f"Failed to load contract requirements: {e}")
+        raise Exception(f"Failed to load contract requirements: {e}")
 
 def get_requirements(matched_position):
     """
