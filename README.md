@@ -29,6 +29,11 @@ print(flat_dict)  # Output: {'a': 1, 'b_c': 2, 'b_d_e': 3}
 
 For more detailed usage instructions, please refer to the documentation.
 
+## Version History
+
+- 0.1.1: Added support for Python 3.10 and 3.11
+- 0.1.0: Initial release
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
