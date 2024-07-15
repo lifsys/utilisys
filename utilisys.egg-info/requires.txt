@@ -1,0 +1,9 @@
+phonenumbers
+pandas
+redis
+fuzzywuzzy
+requests
+beautifulsoup4
+urllib3
+onepasswordconnectsdk
+sqlalchemy

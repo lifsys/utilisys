@@ -1,0 +1,10 @@
+LICENSE
+README.md
+setup.py
+utilisys/__init__.py
+utilisys/utilisys.py
+utilisys.egg-info/PKG-INFO
+utilisys.egg-info/SOURCES.txt
+utilisys.egg-info/dependency_links.txt
+utilisys.egg-info/requires.txt
+utilisys.egg-info/top_level.txt
