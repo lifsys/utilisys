@@ -1,10 +1,10 @@
 Metadata-Version: 2.1
 Name: utilisys
-Version: 0.1.1
-Summary: A collection of utility functions for various tasks
-Home-page: https://github.com/yourusername/utilisys
-Author: Your Name
-Author-email: your.email@example.com
+Version: 0.1.2
+Summary: A collection of utility functions for various tasks by Lifsys, Inc
+Home-page: https://github.com/lifsys/utilisys
+Author: Lifsys, Inc
+Author-email: info@lifsys.com
 Classifier: Development Status :: 3 - Alpha
 Classifier: Intended Audience :: Developers
 Classifier: License :: OSI Approved :: MIT License
@@ -19,9 +19,9 @@ Requires-Python: >=3.7
 Description-Content-Type: text/markdown
 License-File: LICENSE
 
-# Utilisys
+# Utilisys by Lifsys, Inc
 
-Utilisys is a Python package that provides a collection of utility functions for various tasks including API key retrieval, phone number standardization, dictionary flattening, contract requirement handling, email parsing, file operations, and data processing and conversion.
+Utilisys is a Python package developed by Lifsys, Inc that provides a collection of utility functions for various tasks including API key retrieval, phone number standardization, dictionary flattening, contract requirement handling, email parsing, file operations, and data processing and conversion.
 
 ## Installation
 
@@ -52,6 +52,7 @@ For more detailed usage instructions, please refer to the documentation.
 
 ## Version History
 
+- 0.1.2: Prepared for PyPI update
 - 0.1.1: Added support for Python 3.10 and 3.11
 - 0.1.0: Initial release
 
@@ -62,3 +63,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+## About Lifsys, Inc
+
+Lifsys, Inc is a company dedicated to developing efficient and user-friendly software solutions. For more information, visit [www.lifsys.com](https://www.lifsys.com).
