@@ -45,4 +45,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## About Lifsys, Inc
 
-Lifsys, Inc is a company dedicated to developing efficient and user-friendly software solutions. For more information, visit [www.lifsys.com](https://www.lifsys.com).
+Lifsys, Inc is an AI company dedicated to developing solutions for the future. For more information, visit [www.lifsys.com](https://www.lifsys.com).
