@@ -34,6 +34,7 @@ For more detailed usage instructions, please refer to the documentation.
 - 0.1.3: Updated for PyPI release
   - Updated version number in setup.py
   - Updated changelog in README.md
+  - Fixed import statement in utilisys.py (changed 'intellisys' to 'intelisys')
 - 0.1.2: Prepared for PyPI update
 - 0.1.1: Added support for Python 3.10 and 3.11
 - 0.1.0: Initial release
