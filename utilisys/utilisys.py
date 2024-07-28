@@ -4,6 +4,7 @@ Provides utility functions for processing text, files, and data.
 from email import policy
 from email.parser import BytesParser
 from typing import Optional
+from intelisys import get_completion_api
 import phonenumbers
 import logging
 import re
@@ -416,7 +417,6 @@ def save_json_to_file(data, detailexp, validateresume, path_to_save):
 
 def fix_json(json_string, speed="fast"):
     prompt = f"You are a JSON formatter, fixing any issues with JSON formats. Review the following JSON: {json_string}. Return only the fixed JSON with no additional content. Do not add Here is the fixed JSON or any other text."
-    from lib.intellisys import get_completion_api
     return get_completion_api(prompt, f"groq-{speed}", "simple")
 
 def convert_to_dict(json_output):
