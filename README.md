@@ -31,6 +31,10 @@ For more detailed usage instructions, please refer to the documentation.
 
 ## Version History
 
+- 0.1.5: Prepared for PyPI update
+  - Updated version number in setup.py and PKG-INFO
+  - Updated changelog in README.md
+  - Enhanced JSON processing with safe_json_loads function
 - 0.1.4: Prepared for PyPI update
   - Updated version number in setup.py
   - Updated changelog in README.md

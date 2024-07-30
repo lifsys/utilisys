@@ -3,8 +3,8 @@ Provides utility functions for processing text, files, and data.
 """
 from email import policy
 from email.parser import BytesParser
-from typing import Optional
-from intelisys import get_completion_api
+from typing import Optional, Tuple, Dict
+from intelisys import get_completion_api  # Ensure this import is correct
 import phonenumbers
 import logging
 import re
@@ -19,6 +19,13 @@ import urllib3
 from onepasswordconnectsdk import new_client_from_environment
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 from sqlalchemy import create_engine
+import logging
+import ast
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 def get_api(item: str, key_name: str, vault: str = "API") -> str:
     """
@@ -582,7 +589,109 @@ def update_content(info_dict):
             del info_dict[category][item]
     return info_dict
 
-async def write_to_redis(key, value):
-    r = redis.Redis(host="192.168.1.12", port=6379, decode_responses=True)
+async def write_to_redis(key, value, host="192.168.1.12", port=6379):
+    r = redis.Redis(host, port, decode_responses=True)
     await r.set(key, value)
     await r.close()
+
+def remove_preface(text: str) -> str:
+    """
+    Remove any prefaced text before the start of JSON content.
+
+    Args:
+    text (str): The input text that may contain prefaced content before JSON.
+
+    Returns:
+    str: The text with any preface removed, starting from the first valid JSON character.
+    """
+    match: Optional[re.Match] = re.search(r"[\{\[]", text)
+    
+    if match:
+        start: int = match.start()
+        if start > 0:
+            logger.info(f"Removed preface of length {start} characters")
+        return text[start:]
+    
+    logger.warning("No JSON-like content found in the text")
+    return text
+
+def locate_json_error(json_str: str, error_msg: str) -> Tuple[int, int, str]:
+    """
+    Locate the position of the JSON error and return the surrounding context.
+
+    Args:
+    json_str (str): The JSON string with the error.
+    error_msg (str): The error message from json.JSONDecodeError.
+
+    Returns:
+    Tuple[int, int, str]: Line number, column number, and the problematic part of the JSON string.
+    """
+    match = re.search(r"line (\d+) column (\d+)", error_msg)
+    if not match:
+        return 0, 0, "Could not parse error message"
+
+    line_no, col_no = map(int, match.groups())
+    lines = json_str.splitlines()
+
+    if line_no > len(lines):
+        return line_no, col_no, "Line number exceeds total lines in JSON string"
+
+    problematic_line = lines[line_no - 1]
+    start, end = max(0, col_no - 20), min(len(problematic_line), col_no + 20)
+    context = problematic_line[start:end]
+    pointer = f"{' ' * min(20, col_no - 1)}^"
+
+    return line_no, col_no, f"{context}\n{pointer}"
+    
+def iterative_llm_fix_json(json_str: str, max_attempts: int = 5) -> str:
+    """Iteratively use an LLM to fix JSON formatting issues."""
+    prompts = [
+        "The following is a JSON string that has formatting issues. Please fix any errors and return only the corrected JSON:",
+        "The previous attempt to fix the JSON failed. Please try again, focusing on common JSON syntax errors like missing commas, unmatched brackets, or incorrect quotation marks:",
+        "The JSON is still invalid. Please break down the JSON structure, fix each part separately, and then reassemble it into a valid JSON string:",
+        "The JSON remains invalid. Please simplify the structure if possible, removing any nested objects or arrays that might be causing issues:",
+        "As a last resort, please rewrite the entire JSON structure from scratch based on the information contained within it, ensuring it's valid JSON:",
+    ]
+
+    for prompt in prompts[:max_attempts]:
+        try:
+            fixed_json = remove_preface(get_completion_api(
+                f"{prompt}\n\n{json_str}",
+                "gpt-4o-mini",
+                "system",
+                "Correct the JSON and return only the fixed JSON.",
+            ))
+            json.loads(fixed_json)  # Validate the JSON
+            return fixed_json
+        except json.JSONDecodeError as e:
+            line_no, col_no, context = locate_json_error(fixed_json, str(e))
+            logger.warning(f"Fix attempt failed. Error at line {line_no}, column {col_no}:\n{context}")
+
+    raise ValueError("Failed to fix JSON after multiple attempts")
+
+def safe_json_loads(json_str: str, error_prefix: str = "") -> Dict:
+    """Safely load JSON string, with iterative LLM-based error correction."""
+    json_str = remove_preface(json_str)
+    
+    try:
+        return json.loads(json_str)
+    except json.JSONDecodeError as e:
+        line_no, col_no, context = locate_json_error(json_str, str(e))
+        logger.warning(f"{error_prefix}Initial JSON parsing failed at line {line_no}, column {col_no}:\n{context}")
+        
+        fix_attempts = [
+            iterative_llm_fix_json,
+            lambda s: get_completion_api(f"Fix this JSON:\n{s}", "gpt-4o-mini", "system", "Return only the fixed JSON."),
+            ast.literal_eval
+        ]
+        
+        for fix in fix_attempts:
+            try:
+                fixed_json = fix(json_str)
+                return json.loads(fixed_json) if isinstance(fixed_json, str) else fixed_json
+            except (json.JSONDecodeError, ValueError, SyntaxError):
+                continue
+        
+        logger.error(f"{error_prefix}JSON parsing failed after all correction attempts.")
+        logger.debug(f"Problematic JSON string: {json_str}")
+        raise ValueError(f"{error_prefix}Failed to parse JSON after multiple attempts.")
