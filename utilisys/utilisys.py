@@ -669,12 +669,12 @@ def iterative_llm_fix_json(json_str: str, max_attempts: int = 5) -> str:
 
     raise ValueError("Failed to fix JSON after multiple attempts")
 
-def safe_json_loads(json_str: str, error_prefix: str = "") -> str:
+def safe_json_loads(json_str: str, error_prefix: str = "") -> Dict:
     """Safely load JSON string, with iterative LLM-based error correction."""
     json_str = remove_preface(json_str)
     
     try:
-        return json.dumps(json.loads(json_str))
+        return json.loads(json_str)
     except json.JSONDecodeError as e:
         line_no, col_no, context = locate_json_error(json_str, str(e))
         logger.warning(f"{error_prefix}Initial JSON parsing failed at line {line_no}, column {col_no}:\n{context}")
@@ -682,12 +682,13 @@ def safe_json_loads(json_str: str, error_prefix: str = "") -> str:
         fix_attempts = [
             iterative_llm_fix_json,
             lambda s: get_completion_api(f"Fix this JSON:\n{s}", "gpt-4o-mini", "system", "Return only the fixed JSON."),
-            lambda s: json.dumps(ast.literal_eval(s))
+            ast.literal_eval
         ]
         
         for fix in fix_attempts:
             try:
-                return json.dumps(json.loads(fix(json_str)))
+                fixed_json = fix(json_str)
+                return json.loads(fixed_json) if isinstance(fixed_json, str) else fixed_json
             except (json.JSONDecodeError, ValueError, SyntaxError):
                 continue
         
