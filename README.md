@@ -31,6 +31,10 @@ For more detailed usage instructions, please refer to the documentation.
 
 ## Version History
 
+- 0.1.4: Prepared for PyPI update
+  - Updated version number in setup.py
+  - Updated changelog in README.md
+  - Improved error handling in JSON processing functions
 - 0.1.3: Updated for PyPI release
   - Updated version number in setup.py
   - Updated changelog in README.md

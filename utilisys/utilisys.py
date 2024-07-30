@@ -4,7 +4,7 @@ Provides utility functions for processing text, files, and data.
 from email import policy
 from email.parser import BytesParser
 from typing import Optional, Tuple
-from intelisys import get_completion_api
+from intelisys import get_completion_api  # Ensure this import is correct
 import phonenumbers
 import logging
 import re
