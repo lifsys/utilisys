@@ -4,7 +4,6 @@ Provides utility functions for processing text, files, and data.
 from email import policy
 from email.parser import BytesParser
 from typing import Optional, Tuple, Dict
-from intelisys import Intelisys
 import phonenumbers
 import logging
 import re
@@ -52,6 +51,97 @@ def get_api(item: str, key_name: str, vault: str = "API") -> str:
         raise ValueError(f"Key '{key_name}' not found in item '{item}'")
     except Exception as e:
         raise Exception(f"1Password Connect Error: {e}")
+
+def get_completion_api(
+    prompt: str,
+    model_name: str,
+    mode: str = "simple",
+    system_message: Optional[str] = None
+) -> Optional[str]:
+    """
+    Get the completion response from the API using the specified model.
+
+    Args:
+        prompt (str): The prompt to send to the API.
+        model_name (str): The name of the model to use for completion. Supported models include:
+            'gpt-4o-mini', 'gpt-4', 'gpt-4o', 'claude-3.5', 'gemini-flash', 'llama-3-70b',
+            'llama-3.1-large', 'groq-llama', 'groq-fast', 'mistral-large'.
+        mode (str, optional): The mode of message sending ('simple' or 'system'). Defaults to "simple".
+        system_message (Optional[str], optional): The system message to send if in system mode. Defaults to None.
+
+    Returns:
+        Optional[str]: The completion response content, or None if an error occurs.
+
+    Raises:
+        ValueError: If an unsupported model or mode is specified.
+    """
+    try:
+        # Model configurations
+        model_configs = {
+            "gpt-4o-mini": ("OPEN-AI", "Mamba", lambda x: x),
+            "gpt-4": ("OPEN-AI", "Mamba", lambda x: x),
+            "gpt-4o": ("OPEN-AI", "Mamba", lambda x: x),
+            "claude-3.5": ("Anthropic", "CLI-Maya", lambda _: "claude-3-5-sonnet-20240620"),
+            "gemini-flash": ("Gemini", "CLI-Maya", lambda _: "gemini/gemini-1.5-flash"),
+            "llama-3-70b": ("TogetherAI", "API", lambda _: "together_ai/meta-llama/Llama-3-70b-chat-hf"),
+            "llama-3.1-large": ("TogetherAI", "API", lambda _: "together_ai/meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo"),
+            "groq-llama": ("Groq", "Promptsys", lambda _: "groq/llama3-70b-8192"),
+            "groq-fast": ("Groq", "Promptsys", lambda _: "groq/llama3-8b-8192"),
+            "mistral-large": ("MistralAI", "API", lambda _: "mistral/mistral-large-latest"),
+        }
+
+        if model_name not in model_configs:
+            raise ValueError(f"Unsupported model: {model_name}")
+
+        api_name, key_name, model_func = model_configs[model_name]
+        try:
+            os.environ[f"{api_name.upper()}_API_KEY"] = get_api(api_name, key_name)
+        except Exception as api_error:
+            raise ValueError(f"Failed to get API key for {api_name}: {api_error}")
+
+        selected_model = model_func(model_name)
+
+        # Select message type
+        match mode:
+            case "simple":
+                print("Message Simple")
+                messages = [{"content": prompt, "role": "user"}]
+            case "system":
+                if system_message is None:
+                    raise ValueError("system_message must be provided in system mode")
+                messages = [
+                    {"content": system_message, "role": "system"},
+                    {"content": prompt, "role": "user"},
+                ]
+            case _:
+                raise ValueError(f"Unsupported mode: {mode}")
+
+        # Make the API call
+        try:
+            response = completion(
+                model=selected_model,
+                messages=messages,
+                temperature=0.1,
+            )
+        except Exception as completion_error:
+            raise RuntimeError(f"API call failed: {completion_error}")
+
+        # Extract and return the response content
+        try:
+            return response["choices"][0]["message"]["content"]
+        except (KeyError, IndexError) as extract_error:
+            raise ValueError(f"Failed to extract content from response: {extract_error}")
+
+    except KeyError as ke:
+        print(f"Key error: {str(ke)}")
+    except ValueError as ve:
+        print(f"Value error: {str(ve)}")
+    except RuntimeError as re:
+        print(f"Runtime error: {str(re)}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {str(e)}")
+
+    return None
 
 def standardize_phone_number(phone: str, default_country: str = "US") -> str:
     """
@@ -425,7 +515,7 @@ def save_json_to_file(data, detailexp, validateresume, path_to_save):
 
 def fix_json(json_string, speed="fast"):
     prompt = f"You are a JSON formatter, fixing any issues with JSON formats. Review the following JSON: {json_string}. Return only the fixed JSON with no additional content. Do not add Here is the fixed JSON or any other text."
-    return Intelisys(provider="groq").chat(prompt)
+    return get_completion_api(prompt, f"groq-{speed}", "simple")
 
 def convert_to_dict(json_output):
     """
@@ -594,97 +684,6 @@ async def write_to_redis(key, value, host="192.168.1.12", port=6379):
     r = redis.Redis(host, port, decode_responses=True)
     await r.set(key, value)
     await r.close()
-
-def get_completion_api(
-    prompt: str,
-    model_name: str,
-    mode: str = "simple",
-    system_message: Optional[str] = None
-) -> Optional[str]:
-    """
-    Get the completion response from the API using the specified model.
-
-    Args:
-        prompt (str): The prompt to send to the API.
-        model_name (str): The name of the model to use for completion. Supported models include:
-            'gpt-4o-mini', 'gpt-4', 'gpt-4o', 'claude-3.5', 'gemini-flash', 'llama-3-70b',
-            'llama-3.1-large', 'groq-llama', 'groq-fast', 'mistral-large'.
-        mode (str, optional): The mode of message sending ('simple' or 'system'). Defaults to "simple".
-        system_message (Optional[str], optional): The system message to send if in system mode. Defaults to None.
-
-    Returns:
-        Optional[str]: The completion response content, or None if an error occurs.
-
-    Raises:
-        ValueError: If an unsupported model or mode is specified.
-    """
-    try:
-        # Model configurations
-        model_configs = {
-            "gpt-4o-mini": ("OPEN-AI", "Mamba", lambda x: x),
-            "gpt-4": ("OPEN-AI", "Mamba", lambda x: x),
-            "gpt-4o": ("OPEN-AI", "Mamba", lambda x: x),
-            "claude-3.5": ("Anthropic", "CLI-Maya", lambda _: "claude-3-5-sonnet-20240620"),
-            "gemini-flash": ("Gemini", "CLI-Maya", lambda _: "gemini/gemini-1.5-flash"),
-            "llama-3-70b": ("TogetherAI", "API", lambda _: "together_ai/meta-llama/Llama-3-70b-chat-hf"),
-            "llama-3.1-large": ("TogetherAI", "API", lambda _: "together_ai/meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo"),
-            "groq-llama": ("Groq", "Promptsys", lambda _: "groq/llama3-70b-8192"),
-            "groq-fast": ("Groq", "Promptsys", lambda _: "groq/llama3-8b-8192"),
-            "mistral-large": ("MistralAI", "API", lambda _: "mistral/mistral-large-latest"),
-        }
-
-        if model_name not in model_configs:
-            raise ValueError(f"Unsupported model: {model_name}")
-
-        api_name, key_name, model_func = model_configs[model_name]
-        try:
-            os.environ[f"{api_name.upper()}_API_KEY"] = get_api(api_name, key_name)
-        except Exception as api_error:
-            raise ValueError(f"Failed to get API key for {api_name}: {api_error}")
-
-        selected_model = model_func(model_name)
-
-        # Select message type
-        match mode:
-            case "simple":
-                print("Message Simple")
-                messages = [{"content": prompt, "role": "user"}]
-            case "system":
-                if system_message is None:
-                    raise ValueError("system_message must be provided in system mode")
-                messages = [
-                    {"content": system_message, "role": "system"},
-                    {"content": prompt, "role": "user"},
-                ]
-            case _:
-                raise ValueError(f"Unsupported mode: {mode}")
-
-        # Make the API call
-        try:
-            response = completion(
-                model=selected_model,
-                messages=messages,
-                temperature=0.1,
-            )
-        except Exception as completion_error:
-            raise RuntimeError(f"API call failed: {completion_error}")
-
-        # Extract and return the response content
-        try:
-            return response["choices"][0]["message"]["content"]
-        except (KeyError, IndexError) as extract_error:
-            raise ValueError(f"Failed to extract content from response: {extract_error}")
-
-    except KeyError as ke:
-        print(f"Key error: {str(ke)}")
-    except ValueError as ve:
-        print(f"Value error: {str(ve)}")
-    except RuntimeError as re:
-        print(f"Runtime error: {str(re)}")
-    except Exception as e:
-        print(f"An unexpected error occurred: {str(e)}")
-
-    return None
 
 def remove_preface(text: str) -> str:
     """
