@@ -219,7 +219,8 @@ def get_requirements(matched_position):
         dict or str: A dictionary containing the position and its formatted requirements,
                      or an error message if the position is not found.
     """
-    contract_df = load_contract_requirements()
+    from dbsys import DatabaseManager
+    contract_df = DatabaseManager(get_api("lifsysdb", "lifsysdb")).read_db("contract_requirements")
     if matched_position not in contract_df['lcat'].values:
         return f"No requirements found for {matched_position}"
 
