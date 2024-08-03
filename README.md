@@ -31,7 +31,11 @@ For more detailed usage instructions, please refer to the documentation.
 
 ## Version History
 
-- 0.1.6: Prepared for PyPI update
+- 0.1.7: Prepared for PyPI update
+  - Updated version number in setup.py and PKG-INFO
+  - Updated changelog in README.md
+  - Minor improvements and bug fixes
+- 0.1.6: Previous PyPI update
   - Updated version number in setup.py and PKG-INFO
   - Updated changelog in README.md
   - Minor improvements and bug fixes

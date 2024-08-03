@@ -6,7 +6,7 @@ with io.open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="utilisys",
-    version="0.1.6",
+    version="0.1.7",
     author="Lifsys, Inc",
     author_email="info@lifsys.com",
     description="A collection of utility functions for various tasks by Lifsys, Inc",
