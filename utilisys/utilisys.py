@@ -199,14 +199,6 @@ def flatten_dict(d, parent_key="", sep="_"):
             items.append((new_key, v))
     return dict(items)
 
-def load_contract_requirements() -> dict:
-    try:
-        engine = create_engine(get_api("lifsysdb", "lifsysdb"))
-        df = pd.read_sql_table("contract_requirements", engine)
-        return df
-    except (FileNotFoundError, json.JSONDecodeError) as e:
-        raise Exception(f"Failed to load contract requirements: {e}")
-
 def get_requirements(matched_position):
     """
     Retrieves the requirements for a given position from a contract DataFrame.
@@ -221,6 +213,7 @@ def get_requirements(matched_position):
     """
     from dbsys import DatabaseManager
     contract_df = DatabaseManager(get_api("lifsysdb", "lifsysdb")).read_db("contract_requirements")
+    matched_position = matched_position.strip()
     if matched_position not in contract_df['lcat'].values:
         return f"No requirements found for {matched_position}"
 
