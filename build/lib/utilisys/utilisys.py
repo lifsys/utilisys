@@ -4,6 +4,8 @@ Provides utility functions for processing text, files, and data.
 from email import policy
 from email.parser import BytesParser
 from typing import Optional, Tuple, Dict
+from locksys import Locksys
+from intelisys import Intelisys
 import phonenumbers
 import logging
 import re
@@ -15,133 +17,19 @@ from fuzzywuzzy import fuzz
 import requests
 from bs4 import BeautifulSoup
 import urllib3
-from onepasswordconnectsdk import new_client_from_environment
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-from sqlalchemy import create_engine
 import logging
 import ast
-from litellm import completion
 
+# Prepare Locksys
+DBCONNECT = Locksys().item("lifsysdb").key("lifsysdb").results()
+
+# Set up logging
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
-def get_api(item: str, key_name: str, vault: str = "API") -> str:
-    """
-    Retrieve an API key from a 1Password vault.
-
-    Args:
-        item (str): The name of the item in the 1Password vault.
-        key_name (str): The name of the key within the item.
-        vault (str, optional): The name of the vault. Defaults to "API".
-
-    Returns:
-        str: The value of the requested key.
-
-    Raises:
-        Exception: If there's an error connecting to 1Password or retrieving the key.
-    """
-    try:
-        client = new_client_from_environment()
-        item = client.get_item(item, vault)
-        for field in item.fields:
-            if field.label == key_name:
-                return field.value
-        raise ValueError(f"Key '{key_name}' not found in item '{item}'")
-    except Exception as e:
-        raise Exception(f"1Password Connect Error: {e}")
-
-def get_completion_api(
-    prompt: str,
-    model_name: str,
-    mode: str = "simple",
-    system_message: Optional[str] = None
-) -> Optional[str]:
-    """
-    Get the completion response from the API using the specified model.
-
-    Args:
-        prompt (str): The prompt to send to the API.
-        model_name (str): The name of the model to use for completion. Supported models include:
-            'gpt-4o-mini', 'gpt-4', 'gpt-4o', 'claude-3.5', 'gemini-flash', 'llama-3-70b',
-            'llama-3.1-large', 'groq-llama', 'groq-fast', 'mistral-large'.
-        mode (str, optional): The mode of message sending ('simple' or 'system'). Defaults to "simple".
-        system_message (Optional[str], optional): The system message to send if in system mode. Defaults to None.
-
-    Returns:
-        Optional[str]: The completion response content, or None if an error occurs.
-
-    Raises:
-        ValueError: If an unsupported model or mode is specified.
-    """
-    try:
-        # Model configurations
-        model_configs = {
-            "gpt-4o-mini": ("OPEN-AI", "Mamba", lambda x: x),
-            "gpt-4": ("OPEN-AI", "Mamba", lambda x: x),
-            "gpt-4o": ("OPEN-AI", "Mamba", lambda x: x),
-            "claude-3.5": ("Anthropic", "CLI-Maya", lambda _: "claude-3-5-sonnet-20240620"),
-            "gemini-flash": ("Gemini", "CLI-Maya", lambda _: "gemini/gemini-1.5-flash"),
-            "llama-3-70b": ("TogetherAI", "API", lambda _: "together_ai/meta-llama/Llama-3-70b-chat-hf"),
-            "llama-3.1-large": ("TogetherAI", "API", lambda _: "together_ai/meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo"),
-            "groq-llama": ("Groq", "Promptsys", lambda _: "groq/llama3-70b-8192"),
-            "groq-fast": ("Groq", "Promptsys", lambda _: "groq/llama3-8b-8192"),
-            "mistral-large": ("MistralAI", "API", lambda _: "mistral/mistral-large-latest"),
-        }
-
-        if model_name not in model_configs:
-            raise ValueError(f"Unsupported model: {model_name}")
-
-        api_name, key_name, model_func = model_configs[model_name]
-        try:
-            os.environ[f"{api_name.upper()}_API_KEY"] = get_api(api_name, key_name)
-        except Exception as api_error:
-            raise ValueError(f"Failed to get API key for {api_name}: {api_error}")
-
-        selected_model = model_func(model_name)
-
-        # Select message type
-        match mode:
-            case "simple":
-                print("Message Simple")
-                messages = [{"content": prompt, "role": "user"}]
-            case "system":
-                if system_message is None:
-                    raise ValueError("system_message must be provided in system mode")
-                messages = [
-                    {"content": system_message, "role": "system"},
-                    {"content": prompt, "role": "user"},
-                ]
-            case _:
-                raise ValueError(f"Unsupported mode: {mode}")
-
-        # Make the API call
-        try:
-            response = completion(
-                model=selected_model,
-                messages=messages,
-                temperature=0.1,
-            )
-        except Exception as completion_error:
-            raise RuntimeError(f"API call failed: {completion_error}")
-
-        # Extract and return the response content
-        try:
-            return response["choices"][0]["message"]["content"]
-        except (KeyError, IndexError) as extract_error:
-            raise ValueError(f"Failed to extract content from response: {extract_error}")
-
-    except KeyError as ke:
-        print(f"Key error: {str(ke)}")
-    except ValueError as ve:
-        print(f"Value error: {str(ve)}")
-    except RuntimeError as re:
-        print(f"Runtime error: {str(re)}")
-    except Exception as e:
-        print(f"An unexpected error occurred: {str(e)}")
-
-    return None
 
 def standardize_phone_number(phone: str, default_country: str = "US") -> str:
     """
@@ -212,7 +100,7 @@ def get_requirements(matched_position):
                      or an error message if the position is not found.
     """
     from dbsys import DatabaseManager
-    contract_df = DatabaseManager(get_api("lifsysdb", "lifsysdb")).read_db("contract_requirements")
+    contract_df = DatabaseManager(DBCONNECT).use_table("contract_requirements").read().results()
     matched_position = matched_position.strip()
     if matched_position not in contract_df['lcat'].values:
         return f"No requirements found for {matched_position}"
@@ -281,7 +169,7 @@ def read_all_eml_files(directory_path):
             output_text = parse_eml_file(file_path)
             print(f"Contents of {filename}:\n{output_text}\n")
 
-def extract_text_version_link(email_content):
+def extract_link(content, pattern):
     """
     Extracts the link to the TEXT version from the given email content.
 
@@ -292,8 +180,8 @@ def extract_text_version_link(email_content):
         str or None: The link to the TEXT version if found, None otherwise.
     """
     # Regular expression to find the TEXT version link
-    text_link_pattern = r"Link to the TEXT version:\s*(http://\S+)"
-    match = re.search(text_link_pattern, email_content)
+    text_link_pattern = fr"{pattern}\s*(http://\S+)"
+    match = re.search(text_link_pattern, content)
 
     if match:
         return match.group(1)
@@ -509,7 +397,7 @@ def save_json_to_file(data, detailexp, validateresume, path_to_save):
 
 def fix_json(json_string, speed="fast"):
     prompt = f"You are a JSON formatter, fixing any issues with JSON formats. Review the following JSON: {json_string}. Return only the fixed JSON with no additional content. Do not add Here is the fixed JSON or any other text."
-    return get_completion_api(prompt, f"groq-{speed}", "simple")
+    return Intelisys(provider="groq", model="llama-3.1-8b-instant").chat(prompt).results()
 
 def convert_to_dict(json_output):
     """
@@ -740,12 +628,13 @@ def iterative_llm_fix_json(json_str: str, max_attempts: int = 5) -> str:
 
     for prompt in prompts[:max_attempts]:
         try:
-            fixed_json = remove_preface(get_completion_api(
-                f"{prompt}\n\n{json_str}",
-                "gpt-4o-mini",
-                "system",
-                "Correct the JSON and return only the fixed JSON.",
-            ))
+            fixed_json = Intelisys(
+                provider="openai", 
+                model="gpt-4o-mini",
+                json_mode=True) \
+                .set_system_message("Correct the JSON and return only the fixed JSON.") \
+                .chat(f"{prompt}\n\n{json_str}") \
+                .results()
             json.loads(fixed_json)  # Validate the JSON
             return fixed_json
         except json.JSONDecodeError as e:
@@ -766,7 +655,13 @@ def safe_json_loads(json_str: str, error_prefix: str = "") -> Dict:
         
         fix_attempts = [
             iterative_llm_fix_json,
-            lambda s: get_completion_api(f"Fix this JSON:\n{s}", "gpt-4o-mini", "system", "Return only the fixed JSON."),
+            lambda s: Intelisys(
+                provider="openai", 
+                model="gpt-4o-mini",
+                json_mode=True) \
+                .set_system_message("Return only the fixed JSON.") \
+                .chat(f"Fix this JSON:\n{s}") \
+                .results(),
             ast.literal_eval
         ]
         
