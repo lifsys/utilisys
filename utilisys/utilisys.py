@@ -212,7 +212,7 @@ def get_requirements(matched_position):
                      or an error message if the position is not found.
     """
     from dbsys import DatabaseManager
-    contract_df = DatabaseManager(get_api("lifsysdb", "lifsysdb")).read_db("contract_requirements")
+    contract_df = DatabaseManager(get_api("lifsysdb", "lifsysdb")).use_table("contract_requirements").read().get_data()
     matched_position = matched_position.strip()
     if matched_position not in contract_df['lcat'].values:
         return f"No requirements found for {matched_position}"
