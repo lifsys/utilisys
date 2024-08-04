@@ -31,13 +31,16 @@ For more detailed usage instructions, please refer to the documentation.
 
 ## Version History
 
-- 0.1.12: Prepared for PyPI update
+- 0.1.13: Prepared for PyPI update
+  - Updated version number in setup.py, __init__.py, and PKG-INFO
+  - Updated changelog in CHANGELOG.md with detailed changes in utilisys.py
+  - Added new functions and improved existing ones in utilisys.py
+- 0.1.12: Previous PyPI update
   - Updated version number in setup.py, __init__.py, and PKG-INFO
   - Updated changelog in CHANGELOG.md
   - Several changes in utilisys.py
 - 0.1.11: Previous PyPI update
   - Updated version number for PyPI release
-- 0.1.10: Previous PyPI update
   - Updated version number in setup.py and PKG-INFO
   - Updated changelog in README.md
   - Minor improvements and bug fixes
