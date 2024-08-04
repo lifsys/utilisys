@@ -1,6 +1,8 @@
 """
 Provides utility functions for processing text, files, and data.
 
+Version: 0.1.11
+
 This module contains a collection of utility functions for various tasks including:
 - API key retrieval
 - Phone number standardization
