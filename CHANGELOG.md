@@ -5,20 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.13] - 2024-08-04
+## [0.1.14] - 2024-08-05
 
 ### Changed
 - Updated version number for PyPI release
 - Several changes in utilisys.py:
-  - Added `get_api` function for retrieving API keys from 1Password vault
-  - Added `get_completion_api` function for handling API completions with various models
-  - Updated `get_requirements` function to use DatabaseManager
-  - Added `fix_json` function using LLM for JSON formatting
-  - Added `iterative_llm_fix_json` function for iterative JSON fixing
-  - Updated `safe_json_loads` function with improved error handling and LLM-based fixing
-  - Added logging configuration and error handling improvements throughout the file
+  - Updated `get_requirements` function to use `use_table` method instead of `table` method
+  - Modified `fix_json` function to use Groq's llama-3.1-8b-instant model
+  - Updated `iterative_llm_fix_json` and `safe_json_loads` functions to use OpenAI's gpt-4o-mini model
+  - Added `json_mode=True` parameter to Intelisys calls for better JSON handling
+  - Improved error handling and logging in various functions
 
-## [0.1.12] - 2024-08-04
+## [0.1.13] - 2024-08-04
 
 ### Changed
 - Updated version number for PyPI release
