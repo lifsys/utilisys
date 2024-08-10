@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: utilisys
-Version: 0.1.15
+Version: 0.1.16
 Summary: A collection of utility functions for various tasks by Lifsys, Inc
 Home-page: https://github.com/lifsys/utilisys
 Author: Lifsys, Inc
@@ -61,7 +61,11 @@ For more detailed usage instructions, please refer to the documentation.
 
 ## Version History
 
-- 0.1.15: Prepared for PyPI update
+- 0.1.16: Prepared for PyPI update
+  - Updated version number in setup.py, __init__.py, and PKG-INFO
+  - Updated changelog in README.md and CHANGELOG.md
+  - Minor improvements and bug fixes
+- 0.1.15: Previous PyPI update
   - Updated version number in setup.py, __init__.py, and PKG-INFO
   - Updated changelog in README.md and CHANGELOG.md
   - Improved JSON processing in utilisys.py
