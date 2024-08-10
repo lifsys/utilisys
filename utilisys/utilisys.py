@@ -100,7 +100,7 @@ def get_requirements(matched_position):
                      or an error message if the position is not found.
     """
     from dbsys import DatabaseManager
-    contract_df = DatabaseManager(DBCONNECT).use_table("contract_requirements").read()
+    contract_df = DatabaseManager(DBCONNECT).table("contract_requirements").read()
     matched_position = matched_position.strip()
     if matched_position not in contract_df['lcat'].values:
         return f"No requirements found for {matched_position}"
@@ -625,21 +625,22 @@ def iterative_llm_fix_json(json_str: str, max_attempts: int = 5) -> str:
         "The JSON remains invalid. Please simplify the structure if possible, removing any nested objects or arrays that might be causing issues:",
         "As a last resort, please rewrite the entire JSON structure from scratch based on the information contained within it, ensuring it's valid JSON:",
     ]
-
+    
     for prompt in prompts[:max_attempts]:
         try:
             fixed_json = Intelisys(
-                provider="openai", 
+                provider="openai",
                 model="gpt-4o-mini",
-                json_mode=True) \
-                .set_system_message("Correct the JSON and return only the fixed JSON.") \
-                .chat(f"{prompt}\n\n{json_str}") \
+                json_mode=True
+            ).set_system_message("Correct the JSON and return only the fixed JSON.") \
+             .chat(f"{prompt}\n\n{json_str}")
+            
             json.loads(fixed_json)  # Validate the JSON
             return fixed_json
         except json.JSONDecodeError as e:
             line_no, col_no, context = locate_json_error(fixed_json, str(e))
             logger.warning(f"Fix attempt failed. Error at line {line_no}, column {col_no}:\n{context}")
-
+    
     raise ValueError("Failed to fix JSON after multiple attempts")
 
 def safe_json_loads(json_str: str, error_prefix: str = "") -> Dict:
