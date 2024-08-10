@@ -1,7 +1,7 @@
 """
 Provides utility functions for processing text, files, and data.
 
-Version: 0.1.18
+Version: 0.1.19
 
 This module contains a collection of utility functions for various tasks including:
 - API key retrieval
