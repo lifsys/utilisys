@@ -100,7 +100,7 @@ def get_requirements(matched_position):
                      or an error message if the position is not found.
     """
     from dbsys import DatabaseManager
-    contract_df = DatabaseManager(DBCONNECT).use_table("contract_requirements").read()
+    contract_df = DatabaseManager(DBCONNECT).table("contract_requirements").read()
     matched_position = matched_position.strip()
     if matched_position not in contract_df['lcat'].values:
         return f"No requirements found for {matched_position}"

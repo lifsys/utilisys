@@ -26,9 +26,7 @@ import ast
 DBCONNECT = Locksys().item("lifsysdb").key("lifsysdb").results()
 
 # Set up logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -199,7 +197,7 @@ def fetch_and_parse_html(url):
     BeautifulSoup: Parsed HTML content, or None if the request failed.
     """
     # Set up logging
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
     logger = logging.getLogger(__name__)
 
     # Create a session
@@ -265,7 +263,7 @@ def delete_file(file_path: str) -> Optional[bool]:
                     None if an error occurred during deletion.
     """
     # Set up logging
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
     logger = logging.getLogger(__name__)
 
     try:
