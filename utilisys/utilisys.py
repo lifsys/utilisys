@@ -101,7 +101,7 @@ def get_requirements(matched_position):
                      or an error message if the position is not found.
     """
     from dbsys import DatabaseManager
-    contract_df = DatabaseManager(DBCONNECT).use_table("contract_requirements").read().results()
+    contract_df = DatabaseManager(DBCONNECT).table("contract_requirements").read()
     matched_position = matched_position.strip()
     if matched_position not in contract_df['lcat'].values:
         return f"No requirements found for {matched_position}"
@@ -398,7 +398,7 @@ def save_json_to_file(data, detailexp, validateresume, path_to_save):
 
 def fix_json(json_string, speed="fast"):
     prompt = f"You are a JSON formatter, fixing any issues with JSON formats. Review the following JSON: {json_string}. Return only the fixed JSON with no additional content. Do not add Here is the fixed JSON or any other text."
-    return Intelisys(provider="groq", model="llama-3.1-8b-instant").chat(prompt).results()
+    return Intelisys(provider="groq", model="llama-3.1-8b-instant").chat(prompt)
 
 def convert_to_dict(json_output):
     """
@@ -634,8 +634,7 @@ def iterative_llm_fix_json(json_str: str, max_attempts: int = 5) -> str:
                 model="gpt-4o-mini",
                 json_mode=True) \
                 .set_system_message("Correct the JSON and return only the fixed JSON.") \
-                .chat(f"{prompt}\n\n{json_str}") \
-                .results()
+                .chat(f"{prompt}\n\n{json_str}")
             json.loads(fixed_json)  # Validate the JSON
             return fixed_json
         except json.JSONDecodeError as e:
@@ -661,8 +660,7 @@ def safe_json_loads(json_str: str, error_prefix: str = "") -> Dict:
                 model="gpt-4o-mini",
                 json_mode=True) \
                 .set_system_message("Return only the fixed JSON.") \
-                .chat(f"Fix this JSON:\n{s}") \
-                .results(),
+                .chat(f"Fix this JSON:\n{s}")
             ast.literal_eval
         ]
         
