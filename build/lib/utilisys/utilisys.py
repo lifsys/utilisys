@@ -94,14 +94,13 @@ def get_requirements(matched_position):
 
     Args:
         matched_position (str): The position to retrieve requirements for.
-        contract_df (pandas.DataFrame): The DataFrame containing the contract dictionary.
 
     Returns:
         dict or str: A dictionary containing the position and its formatted requirements,
                      or an error message if the position is not found.
     """
     from dbsys import DatabaseManager
-    contract_df = DatabaseManager(DBCONNECT).table("contract_requirements").read().results()
+    contract_df = DatabaseManager(DBCONNECT).use_table("contract_requirements").read().results()
     matched_position = matched_position.strip()
     if matched_position not in contract_df['lcat'].values:
         return f"No requirements found for {matched_position}"
