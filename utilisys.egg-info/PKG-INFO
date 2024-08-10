@@ -61,7 +61,15 @@ For more detailed usage instructions, please refer to the documentation.
 
 ## Version History
 
-- 0.1.13: Prepared for PyPI update
+- 0.1.15: Prepared for PyPI update
+  - Updated version number in setup.py, __init__.py, and PKG-INFO
+  - Updated changelog in README.md and CHANGELOG.md
+  - Improved JSON processing in utilisys.py
+  - Updated get_requirements function to use DatabaseManager's use_table method
+- 0.1.14: Previous PyPI update
+  - Updated version number for PyPI release
+  - Several changes in utilisys.py (see CHANGELOG.md for details)
+- 0.1.13: Previous PyPI update
   - Updated version number in setup.py, __init__.py, and PKG-INFO
   - Updated changelog in CHANGELOG.md with detailed changes in utilisys.py
   - Added new functions and improved existing ones in utilisys.py
