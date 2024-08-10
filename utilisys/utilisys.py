@@ -94,14 +94,13 @@ def get_requirements(matched_position):
 
     Args:
         matched_position (str): The position to retrieve requirements for.
-        contract_df (pandas.DataFrame): The DataFrame containing the contract dictionary.
 
     Returns:
         dict or str: A dictionary containing the position and its formatted requirements,
                      or an error message if the position is not found.
     """
     from dbsys import DatabaseManager
-    contract_df = DatabaseManager(DBCONNECT).table("contract_requirements").read()
+    contract_df = DatabaseManager(DBCONNECT).use_table("contract_requirements").read().results()
     matched_position = matched_position.strip()
     if matched_position not in contract_df['lcat'].values:
         return f"No requirements found for {matched_position}"
@@ -398,7 +397,7 @@ def save_json_to_file(data, detailexp, validateresume, path_to_save):
 
 def fix_json(json_string, speed="fast"):
     prompt = f"You are a JSON formatter, fixing any issues with JSON formats. Review the following JSON: {json_string}. Return only the fixed JSON with no additional content. Do not add Here is the fixed JSON or any other text."
-    return Intelisys(provider="groq", model="llama-3.1-8b-instant").chat(prompt)
+    return Intelisys(provider="groq", model="llama-3.1-8b-instant").chat(prompt).results()
 
 def convert_to_dict(json_output):
     """
@@ -634,7 +633,8 @@ def iterative_llm_fix_json(json_str: str, max_attempts: int = 5) -> str:
                 model="gpt-4o-mini",
                 json_mode=True) \
                 .set_system_message("Correct the JSON and return only the fixed JSON.") \
-                .chat(f"{prompt}\n\n{json_str}")
+                .chat(f"{prompt}\n\n{json_str}") \
+                .results()
             json.loads(fixed_json)  # Validate the JSON
             return fixed_json
         except json.JSONDecodeError as e:
@@ -660,7 +660,8 @@ def safe_json_loads(json_str: str, error_prefix: str = "") -> Dict:
                 model="gpt-4o-mini",
                 json_mode=True) \
                 .set_system_message("Return only the fixed JSON.") \
-                .chat(f"Fix this JSON:\n{s}")
+                .chat(f"Fix this JSON:\n{s}") \
+                .results(),
             ast.literal_eval
         ]
         

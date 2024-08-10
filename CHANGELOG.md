@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.15] - 2024-08-11
+
+### Changed
+- Updated version number for PyPI release
+- Improved JSON processing in utilisys.py:
+  - Enhanced `fix_json`, `iterative_llm_fix_json`, and `safe_json_loads` functions
+  - Improved error handling and logging for JSON-related operations
+- Updated `get_requirements` function to use DatabaseManager's use_table method
+- Updated documentation and version numbers in setup.py, __init__.py, README.md, and PKG-INFO
+
 ## [0.1.14] - 2024-08-05
 
 ### Changed
