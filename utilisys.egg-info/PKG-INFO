@@ -61,7 +61,11 @@ For more detailed usage instructions, please refer to the documentation.
 
 ## Version History
 
-- 0.1.17: Prepared for PyPI update
+- 0.1.18: Prepared for PyPI update
+  - Updated version number in setup.py, __init__.py, and PKG-INFO
+  - Updated changelog in README.md and CHANGELOG.md
+  - Minor improvements and bug fixes
+- 0.1.17: Previous PyPI update
   - Updated version number in setup.py, __init__.py, and PKG-INFO
   - Updated changelog in README.md and CHANGELOG.md
   - Minor improvements and bug fixes
